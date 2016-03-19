@@ -4,9 +4,12 @@ package com.audioguides.sunshine.sunshine;
  * Created by juech on 18/03/2016.
  */
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
@@ -16,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -49,16 +53,25 @@ public class ForecastFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         ArrayList<String> weekForecast = new ArrayList<String>();
-        weekForecast.add("first data in list");
-        weekForecast.add("second data ");
-        weekForecast.add("third data type");
-        weekForecast.add("that's all folks!!");
 
         mForecastAdapter = new ArrayAdapter<String>(getActivity(),
                 R.layout.list_item_forecast, R.id.list_item_forecast_textview, weekForecast);
 
+        //listView for the weather forecast
         ListView mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
         mListView.setAdapter(mForecastAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String forecast = mForecastAdapter.getItem(position);
+                Toast.makeText(getActivity(), forecast , Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, forecast);
+                startActivity(intent);
+            }
+        });
+
 
         return rootView;
     }
@@ -67,6 +80,12 @@ public class ForecastFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        UpdateWeather();
     }
 
     @Override
@@ -80,10 +99,17 @@ public class ForecastFragment extends Fragment {
         int id = item.getItemId();
         if(id == R.id.action_refresh){
             Toast.makeText(getContext(), "refreshing...", Toast.LENGTH_SHORT).show();
-            new FetchWeatherTask().execute("3333229");
 
+            UpdateWeather();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void UpdateWeather(){
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = settings.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        new FetchWeatherTask().execute(location);
     }
 
 
@@ -269,12 +295,24 @@ public class ForecastFragment extends Fragment {
                 double high = temperatureObject.getDouble(OWM_MAX);
                 double low = temperatureObject.getDouble(OWM_MIN);
 
-                highAndLow = formatHighLows(high, low);
+
+                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                String units = settings.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_default));
+                if(units == getString(R.string.pref_units_default))
+                    highAndLow = formatHighLows(high, low);
+                else
+                    highAndLow = formatHighLows(ConvertMetricToFarenheit(high), ConvertMetricToFarenheit(low));
+
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
 
             return resultStrs;
 
+        }
+
+        private double ConvertMetricToFarenheit (double temperatureMetric){
+            //T(°F)=(T(°C) × 9/5 + 32
+            return temperatureMetric * 9.0/5.0 +32.0;
         }
 
         @Override
