@@ -20,5 +20,7 @@
     <string name="pref_units_summary">Select your preferred units</string>
     <string name="pref_units_key" translatable="false">units</string>
     <string name="pref_units_default" translatable="false">metric</string>
+    <string name="pref_units_metric">metric</string>
+    <string name="pref_units_imperial">farenheit</string>
 
 </resources>
