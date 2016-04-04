@@ -16,7 +16,9 @@
 
 package com.audioguides.sunshine.sunshine;
 
+import android.app.LoaderManager;
 import android.content.Intent;
+import android.content.Loader;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
@@ -31,7 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +45,11 @@ public class DetailActivity extends AppCompatActivity {
                     .commit();
         }
 
-    }
+        // Prepare the loader.  Either re-connect with an existing one,
+        // or start a new one.
+        getLoaderManager().initLoader(0, null, this);
 
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -70,6 +75,26 @@ public class DetailActivity extends AppCompatActivity {
     }
 
 
+    /*
+        CursorLoader methods
+     */
+    @Override
+    public Loader onCreateLoader(int id, Bundle args) {
+
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader loader, Object data) {
+        mAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+        mAdapter.swapCursor(null);
+    }
+
+
     /**
      * A placeholder fragment containing a simple view.
      */
@@ -92,11 +117,12 @@ public class DetailActivity extends AppCompatActivity {
 
             View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
 
-            if(intent != null && intent.hasExtra(Intent.EXTRA_TEXT)){
-                mForecastStr = intent.getStringExtra(Intent.EXTRA_TEXT);
-                ((TextView)rootView.findViewById(R.id.forecast_detail_textview))
-                        .setText(mForecastStr);
+            if(intent != null){
+                mForecastStr = intent.getDataString();
             }
+            TextView tv = (TextView)rootView.findViewById(R.id.forecast_detail_textview);
+            tv.setText(mForecastStr);
+
             return rootView;
         }
 

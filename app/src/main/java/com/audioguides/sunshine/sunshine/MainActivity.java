@@ -1,10 +1,8 @@
 package com.audioguides.sunshine.sunshine;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -83,9 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void openPreferredLocationInMap (){
         //get the location from SharedPreferences. It's saved as ID, but we need the name of the city
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        String location_name = getLocationNameFromID(settings
-                .getString(getString(R.string.pref_location_key), getString(R.string.pref_units_default)));
+        String location_name = Utility.getPreferredLocation(this);
 
         //build the URI scheme for send the location
         Uri geolocation = Uri.parse("geo:0,0?").buildUpon()
