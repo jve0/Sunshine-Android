@@ -3,55 +3,28 @@ package com.audioguides.sunshine.sunshine;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import java.util.Arrays;
+public class MainActivity extends ActionBarActivity {
 
-public class MainActivity extends AppCompatActivity {
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private final String FORECASTFRAGMENT_TAG = "FFTAG";
 
-    public static final String LOG_TAG = "MainActivity";
+    private String mLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mLocation = Utility.getPreferredLocation(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        //setSupportActionBar(myToolbar);
-
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ForecastFragment())
+                    .add(R.id.container, new ForecastFragment(), FORECASTFRAGMENT_TAG)
                     .commit();
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
     }
 
     @Override
@@ -71,42 +44,47 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
-        }
-        if (id == R.id.action_map){
-            openPreferredLocationInMap();
+            return true;
         }
 
+        if (id == R.id.action_map) {
+            openPreferredLocationInMap();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
-    private void openPreferredLocationInMap (){
-        //get the location from SharedPreferences. It's saved as ID, but we need the name of the city
-        String location_name = Utility.getPreferredLocation(this);
+    private void openPreferredLocationInMap() {
+        String location = Utility.getPreferredLocation(this);
 
-        //build the URI scheme for send the location
-        Uri geolocation = Uri.parse("geo:0,0?").buildUpon()
-                .appendQueryParameter("q", location_name)
+        // Using the URI scheme for showing a location found on a map.  This super-handy
+        // intent can is detailed in the "Common Intents" page of Android's developer site:
+        // http://developer.android.com/guide/components/intents-common.html#Maps
+        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon()
+                .appendQueryParameter("q", location)
                 .build();
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(geolocation);
+        intent.setData(geoLocation);
 
-        if(intent.resolveActivity(getPackageManager()) != null){
+        if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
-        }else{
-            Log.d("OpenMap", "couldn't open "+ location_name);
-            Toast.makeText(this, "couldn't open "+ location_name , Toast.LENGTH_SHORT).show();
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + location + ", no receiving apps installed!");
         }
-
-
     }
 
-    //translate the city ID for the city name
-    private String getLocationNameFromID (String location_id){
-        int location_index = Arrays.asList(getResources().getStringArray(R.array.forecast_ids_entries))
-                .indexOf(location_id);
-        return getResources()
-                .getStringArray(R.array.forecast_ids_entry_values)[location_index];
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String location = Utility.getPreferredLocation( this );
+        // update the location in our second pane using the fragment manager
+        if (location != null && !location.equals(mLocation)) {
+            ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
+            if ( null != ff ) {
+                ff.onLocationChanged();
+            }
+            mLocation = location;
+        }
     }
-
-
 }

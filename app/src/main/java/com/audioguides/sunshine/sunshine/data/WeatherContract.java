@@ -25,6 +25,7 @@ import android.text.format.Time;
  * Defines table and column names for the weather database.
  */
 public class WeatherContract {
+
     // The "Content authority" is a name for the entire content provider, similar to the
     // relationship between a domain name and its website.  A convenient string to use for the
     // content authority is the package name for the app, which is guaranteed to be unique on the
@@ -36,8 +37,8 @@ public class WeatherContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     // Possible paths (appended to base content URI for possible URI's)
-    // For instance, content://com.audioguides.android.sunshine.app/weather/ is a valid path for
-    // looking at weather data. content://com.audioguides.android.sunshine.app/givemeroot/ will fail,
+    // For instance, content://com.example.android.sunshine.app/weather/ is a valid path for
+    // looking at weather data. content://com.example.android.sunshine.app/givemeroot/ will fail,
     // as the ContentProvider hasn't been given any information on what to do with "givemeroot".
     // At least, let's hope not.  Don't be that dev, reader.  Don't be that dev.
     public static final String PATH_WEATHER = "weather";
@@ -53,57 +54,49 @@ public class WeatherContract {
         return time.setJulianDay(julianDay);
     }
 
-    /*
-        Inner class that defines the table contents of the location table
-        Students: This is where you will add the strings.  (Similar to what has been
-        done for WeatherEntry)
-     */
+    /* Inner class that defines the table contents of the location table */
     public static final class LocationEntry implements BaseColumns {
 
-        /*
-            db columns details
-         */
-        public static final String TABLE_NAME = "location";
-
-        public static final String COLUMN_LOCATION_SETTING = "location_setting";
-
-        //Longitud stored as received from API. Storred as a float
-        public static final String COLUMN_COORD_LONG = "coord_long";
-
-        //Latitude stored as received from API. Stored as a float
-        public static final String COLUMN_COORD_LAT = "coord_lat";
-
-        //City name stored as stored in API
-        public static final String COLUMN_CITY_NAME = "city_name";
-
-        /*
-            URI constants
-         */
-        //base path in which the URI will be built upon
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOCATION).build();
-        //Cursor DIR is used when handling a list of items
+
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
-        //Cursor ITEM is used when handling a single item
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
 
-        /*
-            URI methods: they are helpers for building the URI
-        */
+        // Table name
+        public static final String TABLE_NAME = "location";
+
+        // The location setting string is what will be sent to openweathermap
+        // as the location query.
+        public static final String COLUMN_LOCATION_SETTING = "location_setting";
+
+        // Human readable location string, provided by the API.  Because for styling,
+        // "Mountain View" is more recognizable than 94043.
+        public static final String COLUMN_CITY_NAME = "city_name";
+
+        // In order to uniquely pinpoint the location on the map when we launch the
+        // map intent, we store the latitude and longitude as returned by openweathermap.
+        public static final String COLUMN_COORD_LAT = "coord_lat";
+        public static final String COLUMN_COORD_LONG = "coord_long";
+
         public static Uri buildLocationUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
-
     }
 
     /* Inner class that defines the table contents of the weather table */
     public static final class WeatherEntry implements BaseColumns {
 
-        /*
-            db columns details
-         */
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_WEATHER).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_WEATHER;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_WEATHER;
+
         public static final String TABLE_NAME = "weather";
 
         // Column with the foreign key into the location table.
@@ -124,33 +117,22 @@ public class WeatherContract {
         // Humidity is stored as a float representing percentage
         public static final String COLUMN_HUMIDITY = "humidity";
 
-        // Pressure is stored as a float representing percentage
+        // Humidity is stored as a float representing percentage
         public static final String COLUMN_PRESSURE = "pressure";
 
-        // Wind speed is stored as a float representing wind speed  mph
+        // Windspeed is stored as a float representing windspeed  mph
         public static final String COLUMN_WIND_SPEED = "wind";
 
         // Degrees are meteorological degrees (e.g, 0 is north, 180 is south).  Stored as floats.
         public static final String COLUMN_DEGREES = "degrees";
 
-        /*
-            URI constants
-         */
-        public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_WEATHER).build();
-        public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_WEATHER;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_WEATHER;
-
-
-        /*
-            URI methods: they are helpers for building the URI
-         */
         public static Uri buildWeatherUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
+        /*
+            Student: This is the buildWeatherLocation function you filled in.
+         */
         public static Uri buildWeatherLocation(String locationSetting) {
             return CONTENT_URI.buildUpon().appendPath(locationSetting).build();
         }

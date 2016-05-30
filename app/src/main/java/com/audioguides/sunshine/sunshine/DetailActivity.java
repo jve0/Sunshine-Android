@@ -16,24 +16,13 @@
 
 package com.audioguides.sunshine.sunshine;
 
-import android.app.LoaderManager;
 import android.content.Intent;
-import android.content.Loader;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ShareActionProvider;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
-public class DetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks{
+public class DetailActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,18 +33,12 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
                     .add(R.id.container, new DetailFragment())
                     .commit();
         }
-
-        // Prepare the loader.  Either re-connect with an existing one,
-        // or start a new one.
-        getLoaderManager().initLoader(0, null, this);
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.detail, menu);
-
         return true;
     }
 
@@ -65,92 +48,10 @@ public class DetailActivity extends AppCompatActivity implements LoaderManager.L
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         }
-
         return super.onOptionsItemSelected(item);
-    }
-
-
-    /*
-        CursorLoader methods
-     */
-    @Override
-    public Loader onCreateLoader(int id, Bundle args) {
-
-        return null;
-    }
-
-    @Override
-    public void onLoadFinished(Loader loader, Object data) {
-        mAdapter.swapCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(Loader loader) {
-        mAdapter.swapCursor(null);
-    }
-
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class DetailFragment extends Fragment {
-
-        private static final String LOG_TAG = DetailFragment.class.getSimpleName();
-        private static final String FORECAST_SHARE_HASHTAG = "#ShunshineApp";
-        private String mForecastStr;
-
-        public DetailFragment() {
-            //menu has to be set up as true so that the activity knows that the fragment has menu options
-            setHasOptionsMenu(true);
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-
-            Intent intent = getActivity().getIntent();
-
-            View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-
-            if(intent != null){
-                mForecastStr = intent.getDataString();
-            }
-            TextView tv = (TextView)rootView.findViewById(R.id.forecast_detail_textview);
-            tv.setText(mForecastStr);
-
-            return rootView;
-        }
-
-        //Create the intent that it's going to be sent with the ShareActionProvider
-        private Intent CreateShareForecastIntent (){
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, mForecastStr + FORECAST_SHARE_HASHTAG);
-            return shareIntent;
-        }
-
-        @Override
-        public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-            inflater.inflate(R.menu.detail_fragment, menu);
-
-            //locate the shareActionProvider on the menu item and extract it
-            MenuItem menuItem = menu.findItem(R.id.action_share);
-            ShareActionProvider mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
-
-            //Attach an intent for this ActionProvider every time it is called.
-            //this way, when clicked the info will be updated
-            if(mShareActionProvider != null){
-                mShareActionProvider.setShareIntent(CreateShareForecastIntent());
-            }else{
-                Log.d(LOG_TAG, "ShareActionProvider is null");
-            }
-
-        }
     }
 }

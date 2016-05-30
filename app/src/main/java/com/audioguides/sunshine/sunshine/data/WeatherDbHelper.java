@@ -23,7 +23,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.audioguides.sunshine.sunshine.data.WeatherContract.LocationEntry;
 import com.audioguides.sunshine.sunshine.data.WeatherContract.WeatherEntry;
 
-
 /**
  * Manages a local database for weather data.
  */
